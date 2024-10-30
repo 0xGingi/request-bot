@@ -50,7 +50,7 @@ A Discord bot that manages media requests for Jellyfin/Plex servers. Users can r
   - Available statuses: in progress, fulfilled, rejected, delayed
 - `/list [status]` - List all requests, optionally filtered by status
   - Available filters: pending, in progress, fulfilled, rejected, delayed
-
+- `/clear <status>` - Clear all requests with a specific status
 ## Status Indicators
 - ⏳ Pending
 - 🔄 In Progress

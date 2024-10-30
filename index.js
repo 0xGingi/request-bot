@@ -98,6 +98,23 @@ class RequestBot {
                 ]
             },
             {
+                name: 'clear',
+                description: 'Clear all requests with a specific status (Admin only)',
+                options: [{
+                    name: 'status',
+                    type: ApplicationCommandOptionType.String,
+                    description: 'Status of requests to clear',
+                    required: true,
+                    choices: [
+                        { name: 'Pending', value: 'pending' },
+                        { name: 'In Progress', value: 'in progress' },
+                        { name: 'Fulfilled', value: 'fulfilled' },
+                        { name: 'Rejected', value: 'rejected' },
+                        { name: 'Delayed', value: 'delayed' }
+                    ]
+                }]
+            },            
+            {
                 name: 'list',
                 description: 'List all requests (Admin only)',
                 options: [{
@@ -142,6 +159,9 @@ class RequestBot {
                 break;
             case 'list':
                 await this.handleList(interaction);
+                break;
+            case 'clear':
+                await this.handleClear(interaction);
                 break;
         }
     }
@@ -255,6 +275,39 @@ class RequestBot {
             });
         }
     }
+
+    async handleClear(interaction) {
+        try {
+            if (interaction.user.id !== this.adminId) {
+                await interaction.reply({
+                    content: "You don't have permission to use this command.",
+                    ephemeral: true
+                });
+                return;
+            }
+    
+            const statusToClear = interaction.options.getString('status');
+            const initialCount = Object.keys(this.requests).length;
+            
+            this.requests = Object.fromEntries(
+                Object.entries(this.requests).filter(([_, request]) => request.status !== statusToClear)
+            );
+            
+            const clearedCount = initialCount - Object.keys(this.requests).length;
+            await this.saveRequests();
+    
+            await interaction.reply({
+                content: `Cleared ${clearedCount} request${clearedCount !== 1 ? 's' : ''} with status "${statusToClear}".`,
+                ephemeral: true
+            });
+        } catch (error) {
+            console.error('Error handling clear:', error);
+            await interaction.reply({
+                content: 'An error occurred while clearing requests. Please try again later.',
+                ephemeral: true
+            });
+        }
+    }    
 
     generateRequestId() {
         let requestId;
